@@ -8,7 +8,7 @@ import {createStackNavigator, createAppContainer} from 'react-navigation'
 
 import DayCalendar from './components/DayCalendar'
 import WeekCalendar from './components/WeekCalendar'
-import MonthCalendar from './components/MonthCalendar'
+import DayCalendarVer2 from './components/DayCalendarVer2'
 
 export default class App extends React.Component {
   
@@ -27,8 +27,8 @@ const StackContainer = createStackNavigator(
     WeekCalendar: {
       screen: WeekCalendar
     },
-    MonthCalendar: {
-      screen: MonthCalendar
+    DayCalendarVer2: {
+      screen: DayCalendarVer2
     }
   }
 )

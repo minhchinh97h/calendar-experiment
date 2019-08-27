@@ -102,8 +102,8 @@ export default class DayCalendar extends React.Component {
       this.props.navigation.navigate('WeekCalendar')
   }
 
-  goToMonthCalendar = () => {
-    this.props.navigation.navigate('MonthCalendar')
+  gotoDayCalendarVer2 = () => {
+    this.props.navigation.navigate('DayCalendarVer2')
 }
 
   componentDidMount() {
@@ -191,14 +191,14 @@ export default class DayCalendar extends React.Component {
                 alignItems: "center",
                 marginVertical: 20,
             }}
-            onPress={this.goToMonthCalendar}
+            onPress={this.gotoDayCalendarVer2}
         >
             <Text
                 style={{
                     color: "white"
                 }}
             >
-                Month Calendar
+                Day Calendar Ver 2
             </Text>
         </TouchableOpacity>
       </View>
