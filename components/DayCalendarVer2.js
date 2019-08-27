@@ -42,8 +42,8 @@ export default class DayCalendarVer2 extends React.Component {
                 this.translateX.setValue(this.record_translateX)
                 this.translateX_2.setValue(this.record_translateX_2)
 
-                this.displacement = nativeEvent.velocityX - this.old_velocityX
-                this.old_velocityX = nativeEvent.velocityX
+                // this.displacement = nativeEvent.velocityX - this.old_velocityX
+                // this.old_velocityX = nativeEvent.velocityX
             }
         }
     )
@@ -52,28 +52,26 @@ export default class DayCalendarVer2 extends React.Component {
         if (nativeEvent.state === State.END) {
             this.old_translateX = 0
 
-            // if ((this.record_translateX >= -120) && (this.record_translateX <= 120)) {
-            //     this.record_translateX = 0
-            //     this.record_translateX_2 = this.dimension_width
+            if ((this.record_translateX >= -120) && (this.record_translateX <= 120)) {
+                this.record_translateX = 0
+                this.record_translateX_2 = this.dimension_width
 
-            //     Animated.parallel([
-            //         Animated.spring(this.translateX, {
-            //             toValue: 0
-            //         }),
-            //         Animated.spring(this.translateX_2, {
-            //             toValue: this.dimension_width
-            //         })
-            //     ],
-            //         {
-            //             stopTogether: true
-            //         }
-            //     ).start()
+                Animated.parallel([
+                    Animated.spring(this.translateX, {
+                        toValue: 0
+                    }),
+                    Animated.spring(this.translateX_2, {
+                        toValue: this.dimension_width
+                    })
+                ],
+                    {
+                        stopTogether: true
+                    }
+                ).start()
 
-            // }
-            console.log(this.displacement)
+            }
 
-
-            if (this.displacement < -90) {
+            else if ((this.record_translateX < -120)) {
                 this.record_translateX = -this.dimension_width
                 this.record_translateX_2 = 0
                 Animated.parallel([
@@ -89,6 +87,25 @@ export default class DayCalendarVer2 extends React.Component {
                     }
                 ).start()
             }
+
+            // console.log(this.displacement)
+
+            // if (this.displacement < -90) {
+            //     this.record_translateX = -this.dimension_width
+            //     this.record_translateX_2 = 0
+            //     Animated.parallel([
+            //         Animated.spring(this.translateX, {
+            //             toValue: this.record_translateX
+            //         }),
+            //         Animated.spring(this.translateX_2, {
+            //             toValue: this.record_translateX_2
+            //         })
+            //     ],
+            //         {
+            //             stopTogether: true
+            //         }
+            //     ).start()
+            // }
 
             // else if (this.displacement > 100){
             //     this.record_translateX = 0
@@ -107,24 +124,24 @@ export default class DayCalendarVer2 extends React.Component {
             //     ).start()
             // }
 
-            else {
-                this.record_translateX = 0
-                this.record_translateX_2 = this.dimension_width
+            // else {
+            //     this.record_translateX = 0
+            //     this.record_translateX_2 = this.dimension_width
 
-                Animated.parallel([
-                    Animated.spring(this.translateX, {
-                        toValue: 0
-                    }),
-                    Animated.spring(this.translateX_2, {
-                        toValue: this.dimension_width
-                    })
-                ],
-                    {
-                        stopTogether: true
-                    }
-                ).start()
+            //     Animated.parallel([
+            //         Animated.spring(this.translateX, {
+            //             toValue: 0
+            //         }),
+            //         Animated.spring(this.translateX_2, {
+            //             toValue: this.dimension_width
+            //         })
+            //     ],
+            //         {
+            //             stopTogether: true
+            //         }
+            //     ).start()
 
-            }
+            // }
 
         }
     }
