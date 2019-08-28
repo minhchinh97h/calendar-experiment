@@ -11,8 +11,6 @@ import {
 import { PanGestureHandler, State } from 'react-native-gesture-handler'
 
 export default class DayCalendarVer2 extends React.Component {
-    month = new Date().getMonth()
-    year = new Date().getFullYear()
 
     dimension_width = Dimensions.get("window").width
 
@@ -23,15 +21,12 @@ export default class DayCalendarVer2 extends React.Component {
     translateX_2 = new Animated.Value(this.dimension_width)
     record_translateX_2 = this.dimension_width
 
-
     translateX_3 = new Animated.Value(- this.dimension_width)
     record_translateX_3 = - this.dimension_width
 
     accerlation_value = 100
 
     main_index = 0
-
-    old_main_index = -1
 
     opacity_0 = new Animated.Value(1)
     opacity_1 = new Animated.Value(1)
@@ -41,9 +36,42 @@ export default class DayCalendarVer2 extends React.Component {
     record_opacity_1 = 1
     record_opacity_2 = 1
 
-
     state = {
-        should_update: 0
+        month_0: new Date().getMonth(),
+        month_1: new Date().getMonth() + 1 > 11 ? 0 : new Date().getMonth(),
+        month_2: 0,
+
+        year_0: new Date().getFullYear(),
+        year_1: 0,
+        year_2: 0
+    }
+
+    componentDidMount() {
+        let month_0 = new Date().getMonth(),
+            year_0 = new Date().getFullYear(),
+            month_1, year_1 = year_0,
+            month_2, year_2 = year_0
+
+        month_1 = month_0 + 1
+        if (month_1 > 11) {
+            month_1 = 0
+            year_1 += 1
+        }
+
+        month_2 = month_0 - 1
+        if (month_2 < 0) {
+            month_2 = 11
+            year_2 -= 1
+        }
+
+        this.setState({
+            month_0,
+            month_1,
+            month_2,
+            year_0,
+            year_1,
+            year_2
+        })
     }
 
 
@@ -70,6 +98,7 @@ export default class DayCalendarVer2 extends React.Component {
 
                     this.record_opacity_0 = (this.dimension_width - Math.abs(this.record_translateX)) / (this.dimension_width * 1.3)
                     this.opacity_0.setValue(this.record_opacity_0)
+
                 }
 
                 else if (this.main_index === 1) {
@@ -145,16 +174,20 @@ export default class DayCalendarVer2 extends React.Component {
                     }
                 ).start()
 
-                this.month += 1
+                let { month_1, month_2, year_1, year_2 } = this.state
 
-                if (this.month > 11) {
-                    this.month = 0
-                    this.year += 1
+                month_2 = month_1 + 1
+                year_2 = year_1
+
+                if (month_2 > 11) {
+                    month_2 = 0
+                    year_2 = year_1 + 1
                 }
 
-                this.setState(prevState => ({
-                    should_update: prevState.should_update + 1,
-                }))
+                this.setState({
+                    month_2,
+                    year_2
+                })
             }
 
             // swipe right
@@ -180,16 +213,20 @@ export default class DayCalendarVer2 extends React.Component {
                     }
                 ).start()
 
-                this.month -= 1
+                let { month_1, month_2, year_1, year_2 } = this.state
 
-                if (this.month < 0) {
-                    this.month = 11
-                    this.year -= 1
+                month_1 = month_2 - 1
+                year_1 = year_2
+
+                if (month_1 < 0) {
+                    month_1 = 11
+                    year_1 = year_2 - 1
                 }
 
-                this.setState(prevState => ({
-                    should_update: prevState.should_update + 1,
-                }))
+                this.setState({
+                    month_1,
+                    year_1
+                })
             }
         }
 
@@ -242,16 +279,20 @@ export default class DayCalendarVer2 extends React.Component {
                     }
                 ).start()
 
-                this.month += 1
+                let { month_0, month_2, year_0, year_2 } = this.state
 
-                if (this.month > 11) {
-                    this.month = 0
-                    this.year += 1
+                month_0 = month_2 + 1
+                year_0 = year_2
+
+                if (month_0 > 11) {
+                    month_0 = 0
+                    year_0 = year_2 + 1
                 }
 
-                this.setState(prevState => ({
-                    should_update: prevState.should_update + 1,
-                }))
+                this.setState({
+                    month_0,
+                    year_0
+                })
             }
 
             else if (this.record_translateX_2 > 120) {
@@ -277,16 +318,20 @@ export default class DayCalendarVer2 extends React.Component {
                     }
                 ).start()
 
-                this.month -= 1
+                let { month_0, month_2, year_0, year_2 } = this.state
 
-                if (this.month < 0) {
-                    this.month = 11
-                    this.year -= 1
+                month_2 = month_0 - 1
+                year_2 = year_0
+
+                if (month_2 < 0) {
+                    month_2 = 11
+                    year_2 = year_0 - 1
                 }
 
-                this.setState(prevState => ({
-                    should_update: prevState.should_update + 1,
-                }))
+                this.setState({
+                    month_2,
+                    year_2
+                })
             }
         }
 
@@ -338,16 +383,20 @@ export default class DayCalendarVer2 extends React.Component {
                     }
                 ).start()
 
-                this.month += 1
+                let { month_0, month_1, year_0, year_1 } = this.state
 
-                if (this.month > 11) {
-                    this.month = 0
-                    this.year += 1
+                month_1 = month_0 + 1
+                year_1 = year_0
+
+                if (month_1 > 11) {
+                    month_1 = 0
+                    year_1 = year_0 + 1
                 }
 
-                this.setState(prevState => ({
-                    should_update: prevState.should_update + 1,
-                }))
+                this.setState({
+                    month_1,
+                    year_1
+                })
             }
 
             else if (this.record_translateX_3 > 120) {
@@ -372,16 +421,20 @@ export default class DayCalendarVer2 extends React.Component {
                     }
                 ).start()
 
-                this.month -= 1
+                let { month_0, month_1, year_0, year_1 } = this.state
 
-                if (this.month < 0) {
-                    this.month = 11
-                    this.year -= 1
+                month_0 = month_1 - 1
+                year_0 = year_1
+
+                if (month_0 < 0) {
+                    month_0 = 1
+                    year_0 = year_1 - 1
                 }
 
-                this.setState(prevState => ({
-                    should_update: prevState.should_update + 1,
-                }))
+                this.setState({
+                    month_0,
+                    year_0
+                })
             }
 
         }
@@ -391,13 +444,7 @@ export default class DayCalendarVer2 extends React.Component {
         if (nativeEvent.state === State.END) {
             this.old_translateX = 0
 
-            this.old_main_index = this.main_index
-
             this.handleAnimation(this.main_index)
-
-            // this.opacity_0.setValue(1)
-            // this.opacity_1.setValue(1)
-            // this.opacity_2.setValue(1)
 
         }
     }
@@ -432,8 +479,8 @@ export default class DayCalendarVer2 extends React.Component {
                         }}
                     >
                         <Calendar
-                            month={this.month}
-                            year={this.year}
+                            month={this.state.month_0}
+                            year={this.state.year_0}
                         />
                     </Animated.View>
                 </PanGestureHandler>
@@ -454,8 +501,8 @@ export default class DayCalendarVer2 extends React.Component {
                         }}
                     >
                         <Calendar
-                            month={this.month}
-                            year={this.year}
+                            month={this.state.month_1}
+                            year={this.state.year_1}
                         />
                     </Animated.View>
                 </PanGestureHandler>
@@ -476,8 +523,8 @@ export default class DayCalendarVer2 extends React.Component {
                         }}
                     >
                         <Calendar
-                            month={this.month}
-                            year={this.year}
+                            month={this.state.month_2}
+                            year={this.state.year_2}
                         />
                     </Animated.View>
                 </PanGestureHandler>
