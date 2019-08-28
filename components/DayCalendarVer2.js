@@ -14,63 +14,95 @@ export default class DayCalendarVer2 extends React.Component {
 
     dimension_width = Dimensions.get("window").width
 
-    translateX = new Animated.Value(0)
     old_translateX = 0
-    record_translateX = 0
-
-    translateX_2 = new Animated.Value(this.dimension_width)
-    record_translateX_2 = this.dimension_width
-
-    translateX_3 = new Animated.Value(- this.dimension_width)
-    record_translateX_3 = - this.dimension_width
-
-    accerlation_value = 100
 
     main_index = 0
 
-    opacity_0 = new Animated.Value(1)
-    opacity_1 = new Animated.Value(1)
-    opacity_2 = new Animated.Value(1)
+    translateX_array = [new Animated.Value(0), new Animated.Value(this.dimension_width), new Animated.Value(-this.dimension_width)]
+    record_translateX_array = [0, this.dimension_width, -this.dimension_width]
+    opacity_array = [new Animated.Value(1), new Animated.Value(1), new Animated.Value(1)]
 
-    record_opacity_0 = 1
-    record_opacity_1 = 1
-    record_opacity_2 = 1
+    scrolled_month = 0
+    scrolled_year = 0
 
     state = {
-        month_0: new Date().getMonth(),
-        month_1: new Date().getMonth() + 1 > 11 ? 0 : new Date().getMonth(),
-        month_2: 0,
-
-        year_0: new Date().getFullYear(),
-        year_1: 0,
-        year_2: 0
+        month_array: [0, 0, 0],
+        year_array: [0, 0, 0]
     }
 
     componentDidMount() {
-        let month_0 = new Date().getMonth(),
-            year_0 = new Date().getFullYear(),
-            month_1, year_1 = year_0,
-            month_2, year_2 = year_0
+        let current_month = new Date().getMonth(),
+            current_year = new Date().getFullYear(),
+            month_array = [], year_array = []
 
-        month_1 = month_0 + 1
-        if (month_1 > 11) {
-            month_1 = 0
-            year_1 += 1
+        if (current_month === 0) {
+            month_array = [current_month, current_month + 1, 11]
+            year_array = [current_year, current_year, current_year - 1]
         }
 
-        month_2 = month_0 - 1
-        if (month_2 < 0) {
-            month_2 = 11
-            year_2 -= 1
+        else if (current_month === 11) {
+            month_array = [current_month, 0, current_month - 1]
+            year_array = [current_year, current_year + 1, current_year]
+        }
+
+        else {
+            month_array = [current_month, current_month + 1, current_month - 1]
+            year_array = [current_year, current_year, current_year]
         }
 
         this.setState({
-            month_0,
-            month_1,
-            month_2,
-            year_0,
-            year_1,
-            year_2
+            month_array: [... month_array],
+            year_array: [... year_array]
+        })
+    }
+
+    handleMonthYearWhenSwipe = (swipe_direction, main_index) => {
+        let month_array = [... this.state.month_array],
+            year_array = [... this.state.year_array]
+
+        // swipe to the right => go back in calendar => decrease month
+        if (swipe_direction === 1) {
+            if (month_array[main_index] === 0) {
+                if (main_index === 0) {
+                    month_array[2] = 11
+                    year_array[2] = year_array[main_index] - 1
+                }
+
+                else {
+                    month_array[(main_index - 1) % 3] = 11
+                    year_array[(main_index - 1) % 3] = year_array[main_index] - 1
+                }
+            }
+
+            else {
+                if (main_index === 0) {
+                    month_array[2] = month_array[main_index] - 1
+                    year_array[2] = year_array[main_index]
+                }
+
+                else {
+                    month_array[(main_index - 1) % 3] = month_array[main_index] - 1
+                    year_array[(main_index - 1) % 3] = year_array[main_index]
+                }
+            }
+        }
+
+        // swipe to the left => go forward in calendar => increase month
+        else {
+            if (month_array[main_index] === 11) {
+                month_array[(main_index + 1) % 3] = 0
+                year_array[(main_index + 1) % 3] = year_array[main_index] + 1
+            }
+
+            else {
+                month_array[(main_index + 1) % 3] = month_array[main_index] + 1
+                year_array[(main_index + 1) % 3] = year_array[main_index]
+            }
+        }
+
+        this.setState({
+            month_array: [...month_array],
+            year_array: [...year_array]
         })
     }
 
@@ -81,362 +113,129 @@ export default class DayCalendarVer2 extends React.Component {
         ],
         {
             listener: ({ nativeEvent }) => {
-                this.record_translateX += nativeEvent.translationX - this.old_translateX
-                this.record_translateX_2 += nativeEvent.translationX - this.old_translateX
-                this.record_translateX_3 += nativeEvent.translationX - this.old_translateX
+                this.record_translateX_array.forEach((translate, index, arr) => {
+                    arr[index] += nativeEvent.translationX - this.old_translateX
+                })
+
+                this.translateX_array.forEach((translate, index, arr) => {
+                    arr[index].setValue(this.record_translateX_array[index])
+                })
+
                 this.old_translateX = nativeEvent.translationX
 
-                this.translateX.setValue(this.record_translateX)
-                this.translateX_2.setValue(this.record_translateX_2)
-                this.translateX_3.setValue(this.record_translateX_3)
+                if (this.record_translateX_array[this.main_index] >= -120 && this.record_translateX_array[this.main_index] <= 120) {
+                    this.opacity_array[(this.main_index + 1) % 3].setValue(1)
 
-                if (this.main_index === 0) {
-                    if (this.record_translateX >= -120 && this.record_translateX <= 120) {
-                        this.opacity_1.setValue(1)
-                        this.opacity_2.setValue(1)
+                    if (this.main_index === 0) {
+                        this.opacity_array[2].setValue(1)
                     }
-
-                    this.record_opacity_0 = (this.dimension_width - Math.abs(this.record_translateX)) / (this.dimension_width * 1.3)
-                    this.opacity_0.setValue(this.record_opacity_0)
-
+                    else {
+                        this.opacity_array[(this.main_index - 1) % 3].setValue(1)
+                    }
                 }
 
-                else if (this.main_index === 1) {
-                    if (this.record_translateX_2 >= -120 && this.record_translateX_2 <= 120) {
-                        this.opacity_0.setValue(1)
-                        this.opacity_2.setValue(1)
-                    }
-
-                    this.record_opacity_1 = (this.dimension_width - Math.abs(this.record_translateX_2)) / (this.dimension_width * 1.3)
-                    this.opacity_1.setValue(this.record_opacity_1)
-                }
-
-                else {
-                    if (this.record_translateX_3 >= -120 && this.record_translateX_3 <= 120) {
-                        this.opacity_0.setValue(1)
-                        this.opacity_1.setValue(1)
-                    }
-
-                    this.record_opacity_2 = (this.dimension_width - Math.abs(this.record_translateX_3)) / (this.dimension_width * 1.3)
-                    this.opacity_2.setValue(this.record_opacity_2)
-                }
+                this.opacity_array[this.main_index].setValue((this.dimension_width - Math.abs(this.record_translateX_array[this.main_index])) / (this.dimension_width * 1.3))
             }
         }
     )
 
     handleAnimation = (main_index) => {
-        // translateX
-        if (main_index === 0) {
-            if (this.record_translateX >= -120 && this.record_translateX <= 120) {
-                this.opacity_0.setValue(1)
+        if (this.record_translateX_array[main_index] >= -120 && this.record_translateX_array[main_index] <= 120) {
+            this.opacity_array[main_index].setValue(1)
 
-                this.record_translateX = 0
-                this.record_translateX_2 = this.dimension_width
-                this.record_translateX_3 = -this.dimension_width
 
-                Animated.parallel([
-                    Animated.spring(this.translateX, {
-                        toValue: this.record_translateX
-                    }),
-                    Animated.spring(this.translateX_2, {
-                        toValue: this.record_translateX_2
-                    }),
-                    Animated.spring(this.translateX_3, {
-                        toValue: this.record_translateX_3
-                    })
-                ],
-                    {
-                        stopTogether: true
-                    }
-                ).start()
+            this.record_translateX_array[main_index] = 0
+            this.record_translateX_array[(main_index + 1) % 3] = this.dimension_width
+
+            if (main_index - 1 < 0) {
+                main_index = 6
             }
 
-            // swipe left
-            else if (this.record_translateX < -120) {
-                this.record_translateX = -this.dimension_width
-                this.record_translateX_2 = 0
-                this.record_translateX_3 = this.dimension_width
+            this.record_translateX_array[(main_index - 1) % 3] = - this.dimension_width
 
-                this.main_index = 1
-
-                this.translateX_3.setValue(this.record_translateX_3)
-
-                Animated.parallel([
-                    Animated.spring(this.translateX, {
-                        toValue: this.record_translateX
-                    }),
-                    Animated.spring(this.translateX_2, {
-                        toValue: this.record_translateX_2
-                    })
-                ],
-                    {
-                        stopTogether: true
-                    }
-                ).start()
-
-                let { month_1, month_2, year_1, year_2 } = this.state
-
-                month_2 = month_1 + 1
-                year_2 = year_1
-
-                if (month_2 > 11) {
-                    month_2 = 0
-                    year_2 = year_1 + 1
-                }
-
-                this.setState({
-                    month_2,
-                    year_2
+            let animation_array = this.translateX_array.map((translate, index) =>
+                Animated.spring(this.translateX_array[index], {
+                    toValue: this.record_translateX_array[index]
                 })
-            }
+            )
 
-            // swipe right
-            else if (this.record_translateX > 120) {
-                this.record_translateX = this.dimension_width
-                this.record_translateX_2 = - this.dimension_width
-                this.record_translateX_3 = 0
-
-                this.main_index = 2
-
-                this.translateX_2.setValue(this.record_translateX_2)
-
-                Animated.parallel([
-                    Animated.spring(this.translateX, {
-                        toValue: this.record_translateX
-                    }),
-                    Animated.spring(this.translateX_3, {
-                        toValue: this.record_translateX_3
-                    })
-                ],
-                    {
-                        stopTogether: true
-                    }
-                ).start()
-
-                let { month_1, month_2, year_1, year_2 } = this.state
-
-                month_1 = month_2 - 1
-                year_1 = year_2
-
-                if (month_1 < 0) {
-                    month_1 = 11
-                    year_1 = year_2 - 1
+            Animated.parallel(
+                animation_array,
+                {
+                    stopTogether: true
                 }
-
-                this.setState({
-                    month_1,
-                    year_1
-                })
-            }
+            ).start()
         }
 
-        // translateX_2
-        else if (main_index === 1) {
-            if (this.record_translateX_2 >= -120 && this.record_translateX_2 <= 120) {
-                this.opacity_1.setValue(1)
+        else if (this.record_translateX_array[main_index] < -120) {
 
-                this.record_translateX_2 = 0
-                this.record_translateX = -this.dimension_width
-                this.record_translateX_3 = this.dimension_width
+            this.record_translateX_array[main_index] = - this.dimension_width
+            this.record_translateX_array[(main_index + 1) % 3] = 0
 
-                Animated.parallel([
-                    Animated.spring(this.translateX, {
-                        toValue: this.record_translateX
-                    }),
-                    Animated.spring(this.translateX_2, {
-                        toValue: this.record_translateX_2
-                    }),
-                    Animated.spring(this.translateX_3, {
-                        toValue: this.record_translateX_3
-                    })
-                ],
-                    {
-                        stopTogether: true
-                    }
-                ).start()
+            if (main_index - 1 < 0) {
+                main_index = 6
             }
 
-            else if (this.record_translateX_2 < -120) {
-                this.record_translateX_2 = -this.dimension_width
-                this.record_translateX = this.dimension_width
-                this.record_translateX_3 = 0
+            this.record_translateX_array[(main_index - 1) % 3] = this.dimension_width
 
-                this.main_index = 2
+            this.translateX_array[(main_index - 1) % 3].setValue(this.dimension_width)
 
-                this.translateX.setValue(this.record_translateX)
 
-                Animated.parallel([
-                    Animated.spring(this.translateX_2, {
-                        toValue: this.record_translateX_2
-                    }),
+            let animation_array = this.translateX_array.map((translate, index) => {
+                if (index !== (main_index - 1) % 3)
+                    return (
+                        Animated.spring(this.translateX_array[index], {
+                            toValue: this.record_translateX_array[index]
+                        })
+                    )
+            })
 
-                    Animated.spring(this.translateX_3, {
-                        toValue: this.record_translateX_3
-                    })
-                ],
-                    {
-                        stopTogether: true
-                    }
-                ).start()
-
-                let { month_0, month_2, year_0, year_2 } = this.state
-
-                month_0 = month_2 + 1
-                year_0 = year_2
-
-                if (month_0 > 11) {
-                    month_0 = 0
-                    year_0 = year_2 + 1
+            Animated.parallel(
+                animation_array,
+                {
+                    stopTogether: true
                 }
+            ).start()
 
-                this.setState({
-                    month_0,
-                    year_0
-                })
-            }
+            this.handleMonthYearWhenSwipe(-1, this.main_index)
 
-            else if (this.record_translateX_2 > 120) {
-                this.record_translateX_2 = this.dimension_width
-                this.record_translateX = 0
-                this.record_translateX_3 = - this.dimension_width
 
-                this.main_index = 0
-
-                this.translateX_3.setValue(this.record_translateX_3)
-
-                Animated.parallel([
-                    Animated.spring(this.translateX_2, {
-                        toValue: this.record_translateX_2
-                    }),
-
-                    Animated.spring(this.translateX, {
-                        toValue: this.record_translateX
-                    })
-                ],
-                    {
-                        stopTogether: true
-                    }
-                ).start()
-
-                let { month_0, month_2, year_0, year_2 } = this.state
-
-                month_2 = month_0 - 1
-                year_2 = year_0
-
-                if (month_2 < 0) {
-                    month_2 = 11
-                    year_2 = year_0 - 1
-                }
-
-                this.setState({
-                    month_2,
-                    year_2
-                })
-            }
+            this.main_index = (main_index + 1) % 3
         }
 
-        // translateX_3
-        else {
-            if (this.record_translateX_3 >= -120 && this.record_translateX_3 <= 120) {
-                this.opacity_2.setValue(1)
+        else if (this.record_translateX_array[main_index] > 120) {
 
-                this.record_translateX_3 = 0
-                this.record_translateX_2 = -this.dimension_width
-                this.record_translateX = this.dimension_width
+            this.record_translateX_array[main_index] = this.dimension_width
 
-                Animated.parallel([
-                    Animated.spring(this.translateX, {
-                        toValue: this.record_translateX
-                    }),
-                    Animated.spring(this.translateX_2, {
-                        toValue: this.record_translateX_2
-                    }),
-                    Animated.spring(this.translateX_3, {
-                        toValue: this.record_translateX_3
-                    })
-                ],
-                    {
-                        stopTogether: true
-                    }
-                ).start()
+            this.record_translateX_array[(main_index + 1) % 3] = - this.dimension_width
+
+            this.translateX_array[(main_index + 1) % 3].setValue(-this.dimension_width)
+
+            if (main_index - 1 < 0) {
+                main_index = 6
             }
+            this.record_translateX_array[(main_index - 1) % 3] = 0
 
-            else if (this.record_translateX_3 < -120) {
-                this.record_translateX_3 = -this.dimension_width
-                this.record_translateX_2 = this.dimension_width
-                this.record_translateX = 0
 
-                this.main_index = 0
+            let animation_array = this.translateX_array.map((translate, index) => {
+                if (index !== (main_index + 1) % 3)
+                    return (
+                        Animated.spring(this.translateX_array[index], {
+                            toValue: this.record_translateX_array[index]
+                        })
+                    )
+            })
 
-                this.translateX_2.setValue(this.record_translateX_2)
-
-                Animated.parallel([
-                    Animated.spring(this.translateX, {
-                        toValue: this.record_translateX
-                    }),
-                    Animated.spring(this.translateX_3, {
-                        toValue: this.record_translateX_3
-                    })
-                ],
-                    {
-                        stopTogether: true
-                    }
-                ).start()
-
-                let { month_0, month_1, year_0, year_1 } = this.state
-
-                month_1 = month_0 + 1
-                year_1 = year_0
-
-                if (month_1 > 11) {
-                    month_1 = 0
-                    year_1 = year_0 + 1
+            Animated.parallel(
+                animation_array,
+                {
+                    stopTogether: true
                 }
+            ).start()
 
-                this.setState({
-                    month_1,
-                    year_1
-                })
-            }
+            this.handleMonthYearWhenSwipe(1, this.main_index)
 
-            else if (this.record_translateX_3 > 120) {
-                this.record_translateX_3 = this.dimension_width
-                this.record_translateX_2 = 0
-                this.record_translateX = -this.dimension_width
-
-                this.main_index = 1
-
-                this.translateX.setValue(this.record_translateX)
-
-                Animated.parallel([
-                    Animated.spring(this.translateX_2, {
-                        toValue: this.record_translateX_2
-                    }),
-                    Animated.spring(this.translateX_3, {
-                        toValue: this.record_translateX_3
-                    })
-                ],
-                    {
-                        stopTogether: true
-                    }
-                ).start()
-
-                let { month_0, month_1, year_0, year_1 } = this.state
-
-                month_0 = month_1 - 1
-                year_0 = year_1
-
-                if (month_0 < 0) {
-                    month_0 = 1
-                    year_0 = year_1 - 1
-                }
-
-                this.setState({
-                    month_0,
-                    year_0
-                })
-            }
-
+            this.main_index = (main_index - 1) % 3
         }
     }
 
@@ -445,7 +244,6 @@ export default class DayCalendarVer2 extends React.Component {
             this.old_translateX = 0
 
             this.handleAnimation(this.main_index)
-
         }
     }
 
@@ -474,13 +272,13 @@ export default class DayCalendarVer2 extends React.Component {
                             flex: 1,
                             justifyContent: "center",
                             alignItems: "center",
-                            transform: [{ translateX: this.translateX }],
-                            opacity: this.opacity_0,
+                            transform: [{ translateX: this.translateX_array[0] }],
+                            opacity: this.opacity_array[0],
                         }}
                     >
                         <Calendar
-                            month={this.state.month_0}
-                            year={this.state.year_0}
+                            month={this.state.month_array[0]}
+                            year={this.state.year_array[0]}
                         />
                     </Animated.View>
                 </PanGestureHandler>
@@ -494,15 +292,15 @@ export default class DayCalendarVer2 extends React.Component {
                             flex: 1,
                             justifyContent: "center",
                             alignItems: "center",
-                            transform: [{ translateX: this.translateX_2 }],
+                            transform: [{ translateX: this.translateX_array[1] }],
                             position: "absolute",
                             backgroundColor: "pink",
-                            opacity: this.opacity_1,
+                            opacity: this.opacity_array[1],
                         }}
                     >
                         <Calendar
-                            month={this.state.month_1}
-                            year={this.state.year_1}
+                            month={this.state.month_array[1]}
+                            year={this.state.year_array[1]}
                         />
                     </Animated.View>
                 </PanGestureHandler>
@@ -516,15 +314,15 @@ export default class DayCalendarVer2 extends React.Component {
                             flex: 1,
                             justifyContent: "center",
                             alignItems: "center",
-                            transform: [{ translateX: this.translateX_3 }],
+                            transform: [{ translateX: this.translateX_array[2] }],
                             position: "absolute",
                             backgroundColor: "gainsboro",
-                            opacity: this.opacity_2,
+                            opacity: this.opacity_array[2],
                         }}
                     >
                         <Calendar
-                            month={this.state.month_2}
-                            year={this.state.year_2}
+                            month={this.state.month_array[2]}
+                            year={this.state.year_array[2]}
                         />
                     </Animated.View>
                 </PanGestureHandler>
