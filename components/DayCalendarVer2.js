@@ -24,10 +24,28 @@ export default class DayCalendarVer2 extends React.Component {
     record_translateX_2 = this.dimension_width
 
 
-    displacement = 0
-    old_velocityX = 0
+    translateX_3 = new Animated.Value(- this.dimension_width)
+    record_translateX_3 = - this.dimension_width
 
     accerlation_value = 100
+
+    main_index = 0
+
+    old_main_index = -1
+
+    opacity_0 = new Animated.Value(1)
+    opacity_1 = new Animated.Value(1)
+    opacity_2 = new Animated.Value(1)
+
+    record_opacity_0 = 1
+    record_opacity_1 = 1
+    record_opacity_2 = 1
+
+
+    state = {
+        should_update: 0
+    }
+
 
     _onGestureEvent = Animated.event(
         [
@@ -37,43 +55,113 @@ export default class DayCalendarVer2 extends React.Component {
             listener: ({ nativeEvent }) => {
                 this.record_translateX += nativeEvent.translationX - this.old_translateX
                 this.record_translateX_2 += nativeEvent.translationX - this.old_translateX
+                this.record_translateX_3 += nativeEvent.translationX - this.old_translateX
                 this.old_translateX = nativeEvent.translationX
 
                 this.translateX.setValue(this.record_translateX)
                 this.translateX_2.setValue(this.record_translateX_2)
+                this.translateX_3.setValue(this.record_translateX_3)
 
-                // this.displacement = nativeEvent.velocityX - this.old_velocityX
-                // this.old_velocityX = nativeEvent.velocityX
+                if (this.main_index === 0) {
+                    if(this.record_translateX >= -120 && this.record_translateX <= 120){
+                        this.record_opacity_0 = 1
+
+                        this.opacity_0.setValue(1)
+                        this.opacity_1.setValue(1)
+                        this.opacity_2.setValue(1)
+                    }
+
+                    // swipe left
+                    else if(this.record_translateX < -120){
+                        this.record_opacity_0 = (this.dimension_width - Math.abs(this.record_translateX)) / (this.dimension_width)
+                        this.opacity_0.setValue(this.record_opacity_0)
+                    }
+
+                    // swipe right
+                    else {
+                        this.record_opacity_0 = (this.dimension_width - Math.abs(this.record_translateX)) / (this.dimension_width)
+                        this.opacity_0.setValue(this.record_opacity_0)
+                    }
+                }
+
+                else if(this.main_index === 1){
+                    if(this.record_translateX_2 >= -120 && this.record_translateX_2 <= 120){
+                        this.record_opacity_1 = 1
+
+                        this.opacity_0.setValue(1)
+                        this.opacity_1.setValue(1)
+                        this.opacity_2.setValue(1)
+                    }
+
+                    else if(this.record_translateX_2 < -120){
+                        this.record_opacity_1 = (this.dimension_width - Math.abs(this.record_translateX_2)) / (this.dimension_width)
+                        this.opacity_1.setValue(this.record_opacity_1)
+                    }
+
+                    else {
+                        this.record_opacity_1 = (this.dimension_width - Math.abs(this.record_translateX_2)) / (this.dimension_width)
+                        this.opacity_1.setValue(this.record_opacity_1)
+                    }
+                }
+
+                else{
+                    if(this.record_translateX_3 >= -120 && this.record_translateX_3 <= 120){
+                        this.record_opacity_2 = 1
+
+                        this.opacity_0.setValue(1)
+                        this.opacity_1.setValue(1)
+                        this.opacity_2.setValue(1)
+                    }
+
+                    else if(this.record_translateX_3 < -120){
+                        this.record_opacity_2 = (this.dimension_width - Math.abs(this.record_translateX_3)) / (this.dimension_width)
+                        this.opacity_2.setValue(this.record_opacity_2)
+                    }
+
+                    else {
+                        this.record_opacity_2 = (this.dimension_width - Math.abs(this.record_translateX_3)) / (this.dimension_width)
+                        this.opacity_2.setValue(this.record_opacity_2)
+                    }
+                }
             }
         }
     )
 
-    _onHandlerStateChange = ({ nativeEvent }) => {
-        if (nativeEvent.state === State.END) {
-            this.old_translateX = 0
-
-            if ((this.record_translateX >= -120) && (this.record_translateX <= 120)) {
+    handleAnimation = (main_index) => {
+        // translateX
+        if (main_index === 0) {
+            if (this.record_translateX >= -120 && this.record_translateX <= 120) {
                 this.record_translateX = 0
                 this.record_translateX_2 = this.dimension_width
+                this.record_translateX_3 = -this.dimension_width
 
                 Animated.parallel([
                     Animated.spring(this.translateX, {
-                        toValue: 0
+                        toValue: this.record_translateX
                     }),
                     Animated.spring(this.translateX_2, {
-                        toValue: this.dimension_width
+                        toValue: this.record_translateX_2
+                    }),
+                    Animated.spring(this.translateX_3, {
+                        toValue: this.record_translateX_3
                     })
                 ],
                     {
                         stopTogether: true
                     }
                 ).start()
-
             }
 
-            else if ((this.record_translateX < -120)) {
+            // swipe left
+            else if (this.record_translateX < -120) {
                 this.record_translateX = -this.dimension_width
                 this.record_translateX_2 = 0
+                this.record_translateX_3 = this.dimension_width
+
+                this.main_index = 1
+
+                this.translateX_3.setValue(this.record_translateX_3)
+
                 Animated.parallel([
                     Animated.spring(this.translateX, {
                         toValue: this.record_translateX
@@ -86,63 +174,261 @@ export default class DayCalendarVer2 extends React.Component {
                         stopTogether: true
                     }
                 ).start()
+
+                this.month += 1
+
+                if (this.month > 11) {
+                    this.month = 0
+                    this.year += 1
+                }
+
+                this.setState(prevState => ({
+                    should_update: prevState.should_update + 1,
+                }))
             }
 
-            // console.log(this.displacement)
+            // swipe right
+            else if (this.record_translateX > 120) {
+                this.record_translateX = this.dimension_width
+                this.record_translateX_2 = - this.dimension_width
+                this.record_translateX_3 = 0
 
-            // if (this.displacement < -90) {
-            //     this.record_translateX = -this.dimension_width
-            //     this.record_translateX_2 = 0
-            //     Animated.parallel([
-            //         Animated.spring(this.translateX, {
-            //             toValue: this.record_translateX
-            //         }),
-            //         Animated.spring(this.translateX_2, {
-            //             toValue: this.record_translateX_2
-            //         })
-            //     ],
-            //         {
-            //             stopTogether: true
-            //         }
-            //     ).start()
-            // }
+                this.main_index = 2
 
-            // else if (this.displacement > 100){
-            //     this.record_translateX = 0
-            //     this.record_translateX_2 = this.dimension_width
-            //     Animated.parallel([
-            //         Animated.spring(this.translateX, {
-            //             toValue: this.record_translateX
-            //         }),
-            //         Animated.spring(this.translateX_2, {
-            //             toValue: this.record_translateX_2
-            //         })
-            //     ],
-            //         {
-            //             stopTogether: true
-            //         }
-            //     ).start()
-            // }
+                this.translateX_2.setValue(this.record_translateX_2)
 
-            // else {
-            //     this.record_translateX = 0
-            //     this.record_translateX_2 = this.dimension_width
+                Animated.parallel([
+                    Animated.spring(this.translateX, {
+                        toValue: this.record_translateX
+                    }),
+                    Animated.spring(this.translateX_3, {
+                        toValue: this.record_translateX_3
+                    })
+                ],
+                    {
+                        stopTogether: true
+                    }
+                ).start()
 
-            //     Animated.parallel([
-            //         Animated.spring(this.translateX, {
-            //             toValue: 0
-            //         }),
-            //         Animated.spring(this.translateX_2, {
-            //             toValue: this.dimension_width
-            //         })
-            //     ],
-            //         {
-            //             stopTogether: true
-            //         }
-            //     ).start()
+                this.month -= 1
 
-            // }
+                if (this.month < 0) {
+                    this.month = 11
+                    this.year -= 1
+                }
 
+                this.setState(prevState => ({
+                    should_update: prevState.should_update + 1,
+                }))
+            }
+        }
+
+        // translateX_2
+        else if (main_index === 1) {
+            if (this.record_translateX_2 >= -120 && this.record_translateX_2 <= 120) {
+                this.record_translateX_2 = 0
+                this.record_translateX = -this.dimension_width
+                this.record_translateX_3 = this.dimension_width
+
+                Animated.parallel([
+                    Animated.spring(this.translateX, {
+                        toValue: this.record_translateX
+                    }),
+                    Animated.spring(this.translateX_2, {
+                        toValue: this.record_translateX_2
+                    }),
+                    Animated.spring(this.translateX_3, {
+                        toValue: this.record_translateX_3
+                    })
+                ],
+                    {
+                        stopTogether: true
+                    }
+                ).start()
+            }
+
+            else if (this.record_translateX_2 < -120) {
+                this.record_translateX_2 = -this.dimension_width
+                this.record_translateX = this.dimension_width
+                this.record_translateX_3 = 0
+
+                this.main_index = 2
+
+                this.translateX.setValue(this.record_translateX)
+
+                Animated.parallel([
+                    Animated.spring(this.translateX_2, {
+                        toValue: this.record_translateX_2
+                    }),
+
+                    Animated.spring(this.translateX_3, {
+                        toValue: this.record_translateX_3
+                    })
+                ],
+                    {
+                        stopTogether: true
+                    }
+                ).start()
+
+                this.month += 1
+
+                if (this.month > 11) {
+                    this.month = 0
+                    this.year += 1
+                }
+
+                this.setState(prevState => ({
+                    should_update: prevState.should_update + 1,
+                }))
+            }
+
+            else if (this.record_translateX_2 > 120) {
+                this.record_translateX_2 = this.dimension_width
+                this.record_translateX = 0
+                this.record_translateX_3 = - this.dimension_width
+
+                this.main_index = 0
+
+                this.translateX_3.setValue(this.record_translateX_3)
+
+                Animated.parallel([
+                    Animated.spring(this.translateX_2, {
+                        toValue: this.record_translateX_2
+                    }),
+
+                    Animated.spring(this.translateX, {
+                        toValue: this.record_translateX
+                    })
+                ],
+                    {
+                        stopTogether: true
+                    }
+                ).start()
+
+                this.month -= 1
+
+                if (this.month < 0) {
+                    this.month = 11
+                    this.year -= 1
+                }
+
+                this.setState(prevState => ({
+                    should_update: prevState.should_update + 1,
+                }))
+            }
+        }
+
+        // translateX_3
+        else {
+            if (this.record_translateX_3 >= -120 && this.record_translateX_3 <= 120) {
+                this.record_translateX_3 = 0
+                this.record_translateX_2 = -this.dimension_width
+                this.record_translateX = this.dimension_width
+
+                Animated.parallel([
+                    Animated.spring(this.translateX, {
+                        toValue: this.record_translateX
+                    }),
+                    Animated.spring(this.translateX_2, {
+                        toValue: this.record_translateX_2
+                    }),
+                    Animated.spring(this.translateX_3, {
+                        toValue: this.record_translateX_3
+                    })
+                ],
+                    {
+                        stopTogether: true
+                    }
+                ).start()
+            }
+
+            else if (this.record_translateX_3 < -120) {
+                this.record_translateX_3 = -this.dimension_width
+                this.record_translateX_2 = this.dimension_width
+                this.record_translateX = 0
+
+                this.main_index = 0
+
+                this.translateX_2.setValue(this.record_translateX_2)
+
+                Animated.parallel([
+                    Animated.spring(this.translateX, {
+                        toValue: this.record_translateX
+                    }),
+                    Animated.spring(this.translateX_3, {
+                        toValue: this.record_translateX_3
+                    })
+                ],
+                    {
+                        stopTogether: true
+                    }
+                ).start()
+
+                this.month += 1
+
+                if (this.month > 11) {
+                    this.month = 0
+                    this.year += 1
+                }
+
+                this.setState(prevState => ({
+                    should_update: prevState.should_update + 1,
+                }))
+            }
+
+            else if (this.record_translateX_3 > 120) {
+                this.record_translateX_3 = this.dimension_width
+                this.record_translateX_2 = 0
+                this.record_translateX = -this.dimension_width
+
+                this.main_index = 1
+
+                this.translateX.setValue(this.record_translateX)
+
+                Animated.parallel([
+                    Animated.spring(this.translateX_2, {
+                        toValue: this.record_translateX_2
+                    }),
+                    Animated.spring(this.translateX_3, {
+                        toValue: this.record_translateX_3
+                    })
+                ],
+                    {
+                        stopTogether: true
+                    }
+                ).start()
+
+                this.month -= 1
+
+                if (this.month < 0) {
+                    this.month = 11
+                    this.year -= 1
+                }
+
+                this.setState(prevState => ({
+                    should_update: prevState.should_update + 1,
+                }))
+            }
+
+        }
+    }
+
+    _onHandlerStateChange = ({ nativeEvent }) => {
+        if (nativeEvent.state === State.END) {
+            this.old_translateX = 0
+
+            this.old_main_index = this.main_index
+
+            this.handleAnimation(this.main_index)
+
+            if (this.main_index !== this.old_main_index) {
+            }
+
+        }
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (this.state.should_update !== prevState.should_update) {
         }
     }
 
@@ -166,7 +452,8 @@ export default class DayCalendarVer2 extends React.Component {
                             flex: 1,
                             justifyContent: "center",
                             alignItems: "center",
-                            transform: [{ translateX: this.translateX }]
+                            transform: [{ translateX: this.translateX }],
+                            opacity: this.opacity_0,
                         }}
                     >
                         <Calendar
@@ -188,6 +475,29 @@ export default class DayCalendarVer2 extends React.Component {
                             transform: [{ translateX: this.translateX_2 }],
                             position: "absolute",
                             backgroundColor: "pink",
+                            opacity: this.opacity_1,
+                        }}
+                    >
+                        <Calendar
+                            month={this.month}
+                            year={this.year}
+                        />
+                    </Animated.View>
+                </PanGestureHandler>
+
+                <PanGestureHandler
+                    onGestureEvent={this._onGestureEvent}
+                    onHandlerStateChange={this._onHandlerStateChange}
+                >
+                    <Animated.View
+                        style={{
+                            flex: 1,
+                            justifyContent: "center",
+                            alignItems: "center",
+                            transform: [{ translateX: this.translateX_3 }],
+                            position: "absolute",
+                            backgroundColor: "gainsboro",
+                            opacity: this.opacity_2,
                         }}
                     >
                         <Calendar
@@ -234,21 +544,13 @@ class Calendar extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (this.props.translateX !== prevProps.translateX) {
-            // console.log(this.props.translateX)
+        if (this.props.month !== prevProps.month) {
+            this.initDaysInMonth(this.props.month, this.props.year)
         }
     }
 
     render() {
         return (
-            // <Animated.View
-            //     style={{
-            //         flex: 1,
-            //         justifyContent: "center",
-            //         alignItems: "center",
-            //         transform: [{ translateX: this.props.translateX }]
-            //     }}
-            // >
             <View
                 style={{
                     width: 400,
@@ -261,8 +563,6 @@ class Calendar extends React.Component {
                     month_data_array={this.state.month_data_array}
                 />
             </View>
-
-            // </Animated.View>
         )
     }
 
@@ -276,13 +576,9 @@ class MonthHolder extends React.Component {
         year_text: ""
     }
 
-    // shouldComponentUpdate(nextProps, nextState) {
-    //   return this.props.month_index === nextProps.current_month_index || this.props.month_index === nextProps.last_month_index || this.state.item_array === nextState.item_array
-    // }
-
-    static getDerivedStateFromProps(nextProps, prevState) {
-        if (prevState.fill_array === null && nextProps.month_data_array.length > 0) {
-            let diff = nextProps.month_data_array[0].day_in_week === 0 ? 6 : (nextProps.month_data_array[0].day_in_week - 1)
+    componentDidUpdate(prevProps, prevState) {
+        if (this.props.month_data_array !== prevProps.month_data_array) {
+            let diff = this.props.month_data_array[0].day_in_week === 0 ? 6 : (this.props.month_data_array[0].day_in_week - 1)
 
             let fill_array = []
 
@@ -297,20 +593,13 @@ class MonthHolder extends React.Component {
                 )
             }
 
-            return ({
+            this.setState({
                 fill_array: [...fill_array],
-                month_text: nextProps.month_data_array[0].month,
-                year_text: nextProps.month_data_array[0].year
+                month_text: this.props.month_data_array[0].month,
+                year_text: this.props.month_data_array[0].year
             })
         }
-
-
-        return null
     }
-
-    componentDidMount() {
-    }
-
 
 
     render() {
