@@ -63,65 +63,33 @@ export default class DayCalendarVer2 extends React.Component {
                 this.translateX_3.setValue(this.record_translateX_3)
 
                 if (this.main_index === 0) {
-                    if(this.record_translateX >= -120 && this.record_translateX <= 120){
-                        this.record_opacity_0 = 1
-
-                        this.opacity_0.setValue(1)
+                    if (this.record_translateX >= -120 && this.record_translateX <= 120) {
                         this.opacity_1.setValue(1)
                         this.opacity_2.setValue(1)
                     }
 
-                    // swipe left
-                    else if(this.record_translateX < -120){
-                        this.record_opacity_0 = (this.dimension_width - Math.abs(this.record_translateX)) / (this.dimension_width)
-                        this.opacity_0.setValue(this.record_opacity_0)
-                    }
-
-                    // swipe right
-                    else {
-                        this.record_opacity_0 = (this.dimension_width - Math.abs(this.record_translateX)) / (this.dimension_width)
-                        this.opacity_0.setValue(this.record_opacity_0)
-                    }
+                    this.record_opacity_0 = (this.dimension_width - Math.abs(this.record_translateX)) / (this.dimension_width * 1.3)
+                    this.opacity_0.setValue(this.record_opacity_0)
                 }
 
-                else if(this.main_index === 1){
-                    if(this.record_translateX_2 >= -120 && this.record_translateX_2 <= 120){
-                        this.record_opacity_1 = 1
-
+                else if (this.main_index === 1) {
+                    if (this.record_translateX_2 >= -120 && this.record_translateX_2 <= 120) {
                         this.opacity_0.setValue(1)
-                        this.opacity_1.setValue(1)
                         this.opacity_2.setValue(1)
                     }
 
-                    else if(this.record_translateX_2 < -120){
-                        this.record_opacity_1 = (this.dimension_width - Math.abs(this.record_translateX_2)) / (this.dimension_width)
-                        this.opacity_1.setValue(this.record_opacity_1)
-                    }
-
-                    else {
-                        this.record_opacity_1 = (this.dimension_width - Math.abs(this.record_translateX_2)) / (this.dimension_width)
-                        this.opacity_1.setValue(this.record_opacity_1)
-                    }
+                    this.record_opacity_1 = (this.dimension_width - Math.abs(this.record_translateX_2)) / (this.dimension_width * 1.3)
+                    this.opacity_1.setValue(this.record_opacity_1)
                 }
 
-                else{
-                    if(this.record_translateX_3 >= -120 && this.record_translateX_3 <= 120){
-                        this.record_opacity_2 = 1
-
+                else {
+                    if (this.record_translateX_3 >= -120 && this.record_translateX_3 <= 120) {
                         this.opacity_0.setValue(1)
                         this.opacity_1.setValue(1)
-                        this.opacity_2.setValue(1)
                     }
 
-                    else if(this.record_translateX_3 < -120){
-                        this.record_opacity_2 = (this.dimension_width - Math.abs(this.record_translateX_3)) / (this.dimension_width)
-                        this.opacity_2.setValue(this.record_opacity_2)
-                    }
-
-                    else {
-                        this.record_opacity_2 = (this.dimension_width - Math.abs(this.record_translateX_3)) / (this.dimension_width)
-                        this.opacity_2.setValue(this.record_opacity_2)
-                    }
+                    this.record_opacity_2 = (this.dimension_width - Math.abs(this.record_translateX_3)) / (this.dimension_width * 1.3)
+                    this.opacity_2.setValue(this.record_opacity_2)
                 }
             }
         }
@@ -131,6 +99,8 @@ export default class DayCalendarVer2 extends React.Component {
         // translateX
         if (main_index === 0) {
             if (this.record_translateX >= -120 && this.record_translateX <= 120) {
+                this.opacity_0.setValue(1)
+
                 this.record_translateX = 0
                 this.record_translateX_2 = this.dimension_width
                 this.record_translateX_3 = -this.dimension_width
@@ -226,6 +196,8 @@ export default class DayCalendarVer2 extends React.Component {
         // translateX_2
         else if (main_index === 1) {
             if (this.record_translateX_2 >= -120 && this.record_translateX_2 <= 120) {
+                this.opacity_1.setValue(1)
+
                 this.record_translateX_2 = 0
                 this.record_translateX = -this.dimension_width
                 this.record_translateX_3 = this.dimension_width
@@ -321,6 +293,8 @@ export default class DayCalendarVer2 extends React.Component {
         // translateX_3
         else {
             if (this.record_translateX_3 >= -120 && this.record_translateX_3 <= 120) {
+                this.opacity_2.setValue(1)
+
                 this.record_translateX_3 = 0
                 this.record_translateX_2 = -this.dimension_width
                 this.record_translateX = this.dimension_width
@@ -421,8 +395,9 @@ export default class DayCalendarVer2 extends React.Component {
 
             this.handleAnimation(this.main_index)
 
-            if (this.main_index !== this.old_main_index) {
-            }
+            // this.opacity_0.setValue(1)
+            // this.opacity_1.setValue(1)
+            // this.opacity_2.setValue(1)
 
         }
     }
